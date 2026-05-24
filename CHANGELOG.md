@@ -1,5 +1,11 @@
 # rsbuild-plugin-protobufjs
 
+## 0.1.1
+
+### Patch Changes
+
+- dcdc688: Fix wrapper inference for Rslib ESM and CJS environments.
+
 ## 0.1.0
 
 ### Minor Changes
