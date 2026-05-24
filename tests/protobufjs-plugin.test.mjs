@@ -20,6 +20,7 @@ const createTransform = (
   options,
   environmentModule = false,
   packageType = 'module',
+  environmentName = environmentModule ? 'esm' : 'cjs',
 ) => {
   const tempPath = fs.mkdtempSync(
     path.join(os.tmpdir(), 'rsbuild-protobufjs-'),
@@ -47,7 +48,10 @@ const createTransform = (
     tempPath,
     transform(context) {
       return transform({
-        environment: { config: { output: { module: environmentModule } } },
+        environment: {
+          name: environmentName,
+          config: { output: { module: environmentModule } },
+        },
         ...context,
       });
     },
@@ -104,6 +108,46 @@ test('uses esm wrapper for module output environments', async () => {
   assert.match(code, /export \{\n {2}\$root as default\n\}/);
   assert.equal(
     fs.existsSync(path.resolve(tempPath, 'cache/protobufjs/client.proto.js')),
+    true,
+  );
+});
+
+test('uses esm wrapper for rslib esm environments', async () => {
+  const { tempPath, transform } = createTransform(
+    { dts: false },
+    false,
+    'module',
+    'esm',
+  );
+  const resourcePath = copyFixture('client.proto', tempPath);
+
+  const code = await transform({
+    resourcePath,
+  });
+
+  assert.match(code, /import \$protobuf from "protobufjs\/minimal\.js"/);
+  assert.equal(
+    fs.existsSync(path.resolve(tempPath, 'cache/protobufjs/client.proto.js')),
+    true,
+  );
+});
+
+test('uses commonjs wrapper for rslib cjs environments', async () => {
+  const { tempPath, transform } = createTransform(
+    { dts: false },
+    true,
+    'module',
+    'cjs',
+  );
+  const resourcePath = copyFixture('client.proto', tempPath);
+
+  const code = await transform({
+    resourcePath,
+  });
+
+  assert.match(code, /require\("protobufjs\/minimal"\)/);
+  assert.equal(
+    fs.existsSync(path.resolve(tempPath, 'cache/protobufjs/client.proto.cjs')),
     true,
   );
 });

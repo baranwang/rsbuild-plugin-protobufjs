@@ -115,8 +115,15 @@ export const protobufjsPlugin = ({
       api.transform(
         { test, enforce: 'pre' },
         async ({ resourcePath, environment }) => {
-          const outputWrap =
-            wrap ?? (environment.config.output.module ? 'esm' : 'commonjs');
+          const inferredWrap =
+            environment.name === 'esm'
+              ? 'esm'
+              : environment.name === 'cjs'
+                ? 'commonjs'
+                : environment.config.output.module
+                  ? 'esm'
+                  : 'commonjs';
+          const outputWrap = wrap ?? inferredWrap;
           const moduleTarget = isModuleTarget(target);
           const outputExtension = moduleTarget
             ? getOutputExtension(packageType, outputWrap)
