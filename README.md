@@ -19,7 +19,7 @@ npm i -D rsbuild-plugin-protobufjs
 yarn add -D rsbuild-plugin-protobufjs
 ```
 
-- **peerDependencies**: `protobufjs` (install it in your project)
+- **peerDependencies**: `protobufjs@^8.4.2` (install it in your project)
 - **dependencies**: The plugin uses `protobufjs-cli` internally to run `pbjs`/`pbts`
 
 ## Quick Start
@@ -73,6 +73,12 @@ interface Options {
   target?: string;
 
   /**
+   * Value passed to protobufjs-cli `--wrap` for module targets.
+   * Defaults to 'esm' for ESM output environments and 'commonjs' otherwise.
+   */
+  wrap?: 'default' | 'commonjs' | 'amd' | 'esm' | 'closure' | string;
+
+  /**
    * Whether to generate `.d.ts` for each `.proto`.
    * @default true
    */
@@ -82,6 +88,7 @@ interface Options {
 
 - **test**: Which files to transform. Defaults to all `.proto` files.
 - **target**: Forwarded directly to `pbjs --target`. `static-module` is recommended for most applications.
+- **wrap**: Forwarded to `pbjs --wrap` for module targets. By default, the plugin uses `esm` when the current Rsbuild environment outputs ES modules and `commonjs` otherwise. Set this explicitly if you need `default`, `amd`, `closure`, or a custom wrapper path.
 - **dts**: Whether to call `pbts` to emit a sibling `.d.ts` file next to the source.
 
 ## Example
@@ -96,6 +103,7 @@ export default defineConfig({
     protobufjsPlugin({
       test: /\.proto$/,           // only process .proto files
       target: 'static-module',     // generate static module
+      wrap: 'esm',                 // override wrapper; otherwise inferred per output environment
       dts: true,                   // generate type declarations
     }),
   ],

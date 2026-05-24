@@ -19,7 +19,7 @@ npm i -D rsbuild-plugin-protobufjs
 yarn add -D rsbuild-plugin-protobufjs
 ```
 
-- **peerDependencies**: `protobufjs`（由你的项目安装）
+- **peerDependencies**: `protobufjs@^8.4.2`（由你的项目安装）
 - **dependencies**: 插件内部使用 `protobufjs-cli` 调用 `pbjs`/`pbts`
 
 ## 快速上手
@@ -73,6 +73,12 @@ interface Options {
   target?: string;
 
   /**
+   * 针对模块 target 传给 protobufjs-cli 的 --wrap 值。
+   * 默认在 ESM 输出环境使用 'esm'，其他环境使用 'commonjs'。
+   */
+  wrap?: 'default' | 'commonjs' | 'amd' | 'esm' | 'closure' | string;
+
+  /**
    * 是否为每个 .proto 生成 .d.ts 类型声明。
    * @default true
    */
@@ -82,6 +88,7 @@ interface Options {
 
 - **test**: 控制哪些文件走转换流程，默认匹配所有 `.proto`。
 - **target**: 直接传递给 `pbjs --target`。推荐 `static-module`（静态 API，tree-shakable，适合大多数应用）。
+- **wrap**: 针对模块 target 传递给 `pbjs --wrap`。默认会根据当前 Rsbuild environment 的输出格式推断：ESM 输出使用 `esm`，其他环境使用 `commonjs`。如果需要 `default`、`amd`、`closure` 或自定义 wrapper 路径，可以显式设置。
 - **dts**: 是否调用 `pbts` 输出同名 `.d.ts` 到源文件旁。
 
 ## 示例
@@ -96,6 +103,7 @@ export default defineConfig({
     protobufjsPlugin({
       test: /\.proto$/,           // 仅处理 .proto
       target: 'static-module',     // 生成静态模块
+      wrap: 'esm',                 // 覆盖 wrapper；不配置时按输出环境推断
       dts: true,                   // 生成类型声明
     }),
   ],
